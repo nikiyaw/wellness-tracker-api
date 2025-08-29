@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemas=["bcrypt"], deprecated="auto")
 
 # Hash a password using bcrypt
-def get_password_hsah(password: str) -> str:
+def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 # Verify a plain password against a hashed password
