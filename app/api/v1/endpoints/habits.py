@@ -69,3 +69,17 @@ def update_habit(habit_id: int, habit: HabitUpdate, db: Session = Depends(get_db
     db.commit()
     db.refresh(db_habit)
     return db_habit
+
+
+@router.delete("/{habit_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_habit(habit_id: int, db: Session = Depends(get_db)):
+    db_habit = db.query(HabitModel).filter(HabitModel.id == habit_id).first()
+    if db_habit is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    # Delete the object from the session. 
+    db.delete(db_habit)
+
+    # Commit the deletion. 
+    db.commit()
+    return
