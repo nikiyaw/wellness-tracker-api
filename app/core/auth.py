@@ -13,6 +13,7 @@ from app.core.config import settings
 # The tokenUrl is used for the API documentation (Swagger UI).
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/token")
 
+# Create a JWT token.
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -24,6 +25,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
+# Dependency to get the current user from the token.
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

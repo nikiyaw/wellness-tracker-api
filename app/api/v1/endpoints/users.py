@@ -4,6 +4,12 @@ from app.database.database import get_db
 from app.models.user import User as UserModel
 from app.schemas.user import UserCreate, User as UserSchema
 
+from fastapi.security import OAuth2PasswordRequestForm
+from app.core.security import verify_password
+from app.core.auth import create_access_token
+from app.schemas.auth import Token
+from app.core.config import settings
+
 router = APIRouter()
 
 @router.post("/", repsonse_model=UserSchema, status_code=status.HTTP_201_CREATED)
@@ -38,4 +44,26 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
+@router.post("/token", reponse_model=Token)
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    user = db.query(UserModel).filter(UserModel.email == form_data.username).first()
 
+    # Check if user exists and if the provided password is correct.
+    if not user or not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Create a JWT and set its expiration time. 
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(user.id)}, expires_dealta=access_token_expires
+    )
+
+    # Return the token to the client. 
+    return {"access_token": access_token, "token_type": "bearer"}
