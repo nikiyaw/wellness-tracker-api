@@ -1,17 +1,18 @@
-# This is a FastAPI utility to handle token extraction from the request header
-
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 from jose import JWTError, jwt
-from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+
 from app.database.database import get_db
 from app.models.user import User as UserModel
 from app.core.config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenURL="/v1/token")
+# OAuth2Passwordearer is a FastAPI utility that helps with token extraction from the request header. 
+# The tokenUrl is used for the API documentation (Swagger UI).
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/token")
 
-# Create a JWT access token
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -22,7 +23,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-# Get the current user from the token
+
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -36,7 +37,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
+    
+    # Query the databsae to et the user object.
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if user is None:
         raise credentials_exception
+    
     return user
