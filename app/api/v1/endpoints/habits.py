@@ -28,6 +28,7 @@ def create_habit(habit: HabitCreate, db: Session = Depends(get_db)):
     # 5. Return the SQLAlchemy model, which FastAPI will automatically convert to the Pydantic HabitSchema.
     return db_habit
 
+
 @router.get("/", response_model=List[HabitSchema])
 def read_habits(db: Session = Depends(get_db)):
     # For now, hardcode user_id.
@@ -38,3 +39,16 @@ def read_habits(db: Session = Depends(get_db)):
 
     # Return the list of SQLAlchemy models. FastAPI will convert them to Pydantic schemas.
     return habits
+
+
+@router.get("/{habit_id}", response_model=HabitSchema)
+def read_habit(habit_id: int, db: Session = Depends(get_db)):
+    # Query the database for a specific habit by its ID.
+    db_habit = db.query(HabitModel).filter(HabitModel.id == habit_id).first()
+
+    # If the habit is not found, raise a 404 error. 
+    if db_habit is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    # Return the found SQLAlchemy model.
+    return db_habit
