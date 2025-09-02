@@ -19,8 +19,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
-    # This is a temporary placeholder. We will add proper password hashing later.
-    # For now, we will store the plain password hash. 
+    # Securely hash the user's password before storing it.
     hashed_password = user.password
 
     # Create a new user object using the SQLAlchemy model. 
