@@ -1,29 +1,42 @@
-# Create a API router to handle user-related requests (creating & reading a user)
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.core.security import get_password_hash
 from app.database.database import get_db
 from app.models.user import User as UserModel
 from app.schemas.user import UserCreate, User as UserSchema
 
-from fastapi.security import OAuth2PasswordRequestForm
-from app.schemas.auth import Token
-from app.core.security import verify_password
-from app.core.auth import create_access_token
-
 router = APIRouter()
 
-@router.post("/", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
+@router.post("/", repsonse_model=UserSchema, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    # Check if the email already exists to prevent duplicate users.
+    # .filter() builds a query, and .first() retireves the first result or None.
     db_user = db.query(UserModel).filter(UserModel.email == user.email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    hashed_password = get_password_hash(user.password)
 
+    # If the user exists, raise an HTTP exception.
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # This is a temporary placeholder. We will add proper password hashing later.
+    # For now, we will store the plain password hash. 
+    hashed_password = user.password
+
+    # Create a new user object using the SQLAlchemy model. 
     new_user = UserModel(email=user.email, password_hash=hashed_password)
+
+    # Add the new user to the database session.
     db.add(new_user)
+
+    # Commit the transaction to save the new user to the database. 
     db.commit()
+
+    # Refresh the object to get the user's ID and other default values from the database. 
     db.refresh(new_user)
+
+    # Return the new user object, which FastAPI will convert to the UserSchema.
     return new_user
+
+
+
