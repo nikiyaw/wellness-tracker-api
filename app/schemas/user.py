@@ -18,4 +18,5 @@ class User(UserBase):
     created_at: datetime
 
     class Config:
+        # Pydantic v2 requires this to allow automatic mapping from SQLAlchemy models (ORM mode).
         from_attributes = True
