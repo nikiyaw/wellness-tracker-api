@@ -7,6 +7,11 @@ from app.database.database import get_db
 from app.models.user import User as UserModel
 from app.schemas.user import UserCreate, User as UserSchema
 
+from fastapi.security import OAuth2PasswordRequestForm
+from app.schemas.auth import Token
+from app.core.security import verify_password
+from app.core.auth import create_access_token
+
 router = APIRouter()
 
 @router.post("/", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
