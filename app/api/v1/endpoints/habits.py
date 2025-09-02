@@ -52,3 +52,20 @@ def read_habit(habit_id: int, db: Session = Depends(get_db)):
     
     # Return the found SQLAlchemy model.
     return db_habit
+
+
+@router.put("/{habit_id}", response_model=HabitSchema)
+def update_habit(habit_id: int, habit: HabitUpdate, db: Session = Depends(get_db)):
+    # First, find the habit we want to update. 
+    db_habit = db.query(HabitModel).filter(HabitModel.id == habit_id).first()
+    if db_habit is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    # Update the SQLAlchemy model with the new data (allow partial updates for certain fields)
+    for key, value in habit.model_dump(exclude_unset=True).items():
+        setattr(db_habit, key, value)
+
+    # Commit the changes. 
+    db.commit()
+    db.refresh(db_habit)
+    return db_habit
