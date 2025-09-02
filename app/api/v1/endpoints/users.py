@@ -4,6 +4,7 @@ from app.database.database import get_db
 from app.models.user import User as UserModel
 from app.schemas.user import UserCreate, User as UserSchema
 
+from datetime import timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import verify_password
 from app.core.auth import create_access_token

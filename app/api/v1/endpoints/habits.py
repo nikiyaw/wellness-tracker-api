@@ -4,82 +4,92 @@ from typing import List
 
 from app.database.database import get_db
 from app.models.habit import Habit as HabitModel
+from app.models.user import User as UserModel
 from app.schemas.habit import HabitCreate, HabitUpdate, Habit as HabitSchema
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
 @router.post("/", response_model=HabitSchema, status_code=status.HTTP_201_CREATED)
-def create_habit(habit: HabitCreate, db: Session = Depends(get_db)):
-    # For now, we will hardcode a user_id. We will add real authentication later. 
-    user_id = 1
+def create_habit(
+    habit: HabitCreate, 
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
 
-    # 1. Create a SQLAlchemy model instance from the validated Pydantic data.
-    db_habit = HabitModel(**habit.model_dump(), user_id=user_id)
-
-    # 2. Add the new object to the database session. 
+    # Now, instead of a hardcoded user_id, we use the ID from the authenticated user.
+    db_habit = HabitModel(**habit.model_dump(), user_id=current_user.id)
     db.add(db_habit)
-
-    # 3. Commit the changes to the database. 
     db.commit()
-
-    # 4. Refresh the object to get the ID and other database-generated data.
     db.refresh(db_habit)
-
-    # 5. Return the SQLAlchemy model, which FastAPI will automatically convert to the Pydantic HabitSchema.
     return db_habit
 
 
 @router.get("/", response_model=List[HabitSchema])
-def read_habits(db: Session = Depends(get_db)):
-    # For now, hardcode user_id.
-    user_id = 1
+def read_habits(
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)):
 
-    # Query the database to get all habits for the hardcoded user.
-    habits = db.query(HabitModel).filter(HabitModel.user_id == user_id).all()
-
-    # Return the list of SQLAlchemy models. FastAPI will convert them to Pydantic schemas.
+    # We filter the query to only return habits that belong to the current user.
+    habits = db.query(HabitModel).filter(HabitModel.user_id == current_user.id).all()
     return habits
 
 
 @router.get("/{habit_id}", response_model=HabitSchema)
-def read_habit(habit_id: int, db: Session = Depends(get_db)):
-    # Query the database for a specific habit by its ID.
-    db_habit = db.query(HabitModel).filter(HabitModel.id == habit_id).first()
+def read_habit(
+    habit_id: int, 
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)):
 
-    # If the habit is not found, raise a 404 error. 
+    # The query now filters by both the habit's ID and the user's ID.
+    db_habit = db.query(HabitModel).filter(
+        HabitModel.id == habit_id,
+        HabitModel.user_id == current_user.id
+    ).first()
+
+    # Raising a 404 is a good practice to avoid leaking information.
+    # We don't say "Habit found but you're not the owner."
     if db_habit is None:
         raise HTTPException(status_code=404, detail="Habit not found")
-    
-    # Return the found SQLAlchemy model.
     return db_habit
 
 
 @router.put("/{habit_id}", response_model=HabitSchema)
-def update_habit(habit_id: int, habit: HabitUpdate, db: Session = Depends(get_db)):
-    # First, find the habit we want to update. 
-    db_habit = db.query(HabitModel).filter(HabitModel.id == habit_id).first()
+def update_habit(
+    habit_id: int, 
+    habit: HabitUpdate, 
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+
+    db_habit = db.query(HabitModel).filter(
+        HabitModel.id == habit_id,
+        HabitModel.user_id == current_user.id
+    ).first()
     if db_habit is None:
         raise HTTPException(status_code=404, detail="Habit not found")
     
-    # Update the SQLAlchemy model with the new data (allow partial updates for certain fields)
     for key, value in habit.model_dump(exclude_unset=True).items():
         setattr(db_habit, key, value)
 
-    # Commit the changes. 
     db.commit()
     db.refresh(db_habit)
     return db_habit
 
 
 @router.delete("/{habit_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_habit(habit_id: int, db: Session = Depends(get_db)):
-    db_habit = db.query(HabitModel).filter(HabitModel.id == habit_id).first()
+def delete_habit(
+    habit_id: int, 
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+    db_habit = db.query(HabitModel).filter(
+        HabitModel.id == habit_id,
+        HabitModel.user_id == current_user.id
+    ).first()
     if db_habit is None:
         raise HTTPException(status_code=404, detail="Habit not found")
-    
-    # Delete the object from the session. 
-    db.delete(db_habit)
 
-    # Commit the deletion. 
+    db.delete(db_habit)
     db.commit()
     return
