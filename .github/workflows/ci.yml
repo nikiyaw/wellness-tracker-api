@@ -1,0 +1,64 @@
+# Name for the workflow that appears in the Github Actions UI.
+name: CI workflow
+
+# Triggers for the workflow. These are what make the workflow run.
+# They are ABSOLUTELY NECESSARY for the workflow to be automated. 
+on: 
+    # This section defines the trigger. When code is pushed...
+    push:
+        # ...but only to the 'main' branch.
+        branches: [ "main" ] 
+    # This also triggers the workflow when a pull request is made to 'main'. 
+    pull_request: 
+        branches: [ "main" ]
+
+    # This trigger is NOT absolutely necessary, but it's very useful. 
+    # It lets you manually run the workflow from the Github UI. 
+    workflow_dispatch:
+
+# The 'jobs' section defines what tasks will be executed. 
+jobs:
+    build:
+        # `runs-on` is ABSOLUTELY NECESSARY. It tells Github what type of VM to use. 
+        runs-on: ubuntu-latest
+
+        # `steps` is ABSOLUTELY NECESSARY. It defines the sequence of tasks to be executed.
+        steps:
+            # Step 1: This is ABSOLUTELY NECESSARY. Checkout code - it fetches your repository code onto the VM. 
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            # Step 2: This is ABSOLUTELY NECESSARY. Set up Python - it installs the specified Python version on the VM.
+            - name: Set up Python 3.10
+              uses: actions/setup-python@v5
+              with:
+                python-version: "3.10"
+                cache: "pip" # Not absolutely necessary, but it speeds up the workflow by caching pip packages.
+
+            # Step 3: This is ABSOLUTELY NECESSARY. Install dependencies - it installs the Python packages your project needs.
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+                pip install pytest pytest-cov 
+                
+            # Step 4: This is ABSOLUTELY NECESSARY. Set up database. 
+            - name: Set up database
+              uses: ankane/setup-postgres@v1
+              with:
+                postgres-version: '17'
+
+            # Step 5: This is ABSOLUTELY NECESSARY. Run migrations - it applies any database migrations your project has.
+            - name: Run migrations
+              run: |
+                alembic upgrade head
+              env:
+                DATABASE_URL: postgresql+psycopg://postgres:@localhost:5432/postgres
+            
+            # Step 6: This is ABSOLUTELY NECESSARY. Run tests - it executes your test suite to ensure everything is working.
+            - name: Run tests with pytest
+              run: | 
+                pytest --cov=./ --cov-report=xml
+              env:
+                DATABASE_URL: postgresql+psycopg://postgres:@localhost:5432/postgres
+                SECRET_KEY: test_key
