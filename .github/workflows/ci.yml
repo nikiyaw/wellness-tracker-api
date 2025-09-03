@@ -61,4 +61,4 @@ jobs:
                 pytest --cov=./ --cov-report=xml
               env:
                 DATABASE_URL: postgresql+psycopg://postgres:@localhost:5432/postgres
-                SECRET_KEY: test_key
+                SECRET_KEY: ${{ secrets.SECRET_KEY }}
