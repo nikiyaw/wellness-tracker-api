@@ -58,7 +58,7 @@ jobs:
             # Step 6: This is ABSOLUTELY NECESSARY. Run tests - it executes your test suite to ensure everything is working.
             - name: Run tests with pytest
               run: | 
-                pytest --cov=./ --cov-report=xml
+                pytest
               env:
                 DATABASE_URL: postgresql+psycopg://postgres:@localhost:5432/postgres
                 SECRET_KEY: ${{ secrets.SECRET_KEY }}
