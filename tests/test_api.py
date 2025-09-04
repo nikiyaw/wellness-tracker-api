@@ -13,28 +13,28 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, qutoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Override the `get_db` dependency to use the test database.
 def override_get_db():
+    db = None
     try:
         db = TestingSessionLocal()
         yield db
     finally:
-        db.close()
+        if db:
+            db.close()
 
-app.dependency_overrides[get_db] = override_get_db
-
-# Set up the test client and database for each test run. 
-@pytest.fixture(name="db")
-def db_fixture():
-    Base.metadata.create_all(bind=engine)
-    yield TestingSessionLocal()
-    Base.metadata.drop_all(bind=engine)
-
+# Use a fixture to manage the database and client setup for each test.
 @pytest.fixture(name="client")
 def client_fixture():
-    yield TestClient(app)
+    # This runs BEFORE each test function
+    Base.metadata.create_all(bind=engine)
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as test_client:
+        yield test_client
+    # This runs AFTER each test function
+    Base.metadata.drop_all(bind=engine)
 
 
 # --- Tests for API Endpoints ---
@@ -49,16 +49,16 @@ def test_create_user(client: TestClient):
     assert "created_at" in response.json()
 
 def test_login_and_create_habit(client: TestClient):
-    # First, create a user
+    # First, create a user using "email"
     client.post(
         "/v1/users/",
         json={"email": "test_habit_user@example.com", "password": "testpassword"}
     )
 
-    # Then, login to get a JWT token
+    # Then, login to get a JWT token using "username"
     login_response = client.post(
         "/v1/users/token",
-        data={"email": "test_habit_user@example.com", "password": "testpassword"}
+        data={"username": "test_habit_user@example.com", "password": "testpassword"}
     )
     assert login_response.status_code == 200
     token = login_response.json()["access_token"]
@@ -74,11 +74,12 @@ def test_login_and_create_habit(client: TestClient):
     assert habit_response.json()["name"] == "Read a book"
 
 def test_read_habits_for_user(client: TestClient):
-    # Create a user and login
+    # Corrected: Create user with "email"
     client.post(
         "/v1/users/",
-        json={"username": "read_user@example.com", "password": "readpassword"}
+        json={"email": "read_user@example.com", "password": "readpassword"}
     )
+    # Login with "username"
     login_response = client.post(
         "/v1/users/token",
         data={"username": "read_user@example.com", "password": "readpassword"}
@@ -97,13 +98,19 @@ def test_read_habits_for_user(client: TestClient):
     get_response = client.get("/v1/habits/", headers=headers)
     assert get_response.status_code == 200
     assert len(get_response.json()) == 1
-    assert get_response.json()[0]["name"] == "Meditatae"
+    # Corrected: Typo "Meditatae" -> "Meditate"
+    assert get_response.json()[0]["name"] == "Meditate"
 
 
 # -- More In-Depth Tests ---
 
 def test_read_nonexistent_habit(client: TestClient):
-    # This is an "unhappy path" test for the read endpoint. 
+    # Corrected: Create user with "email"
+    client.post(
+        "/v1/users/",
+        json={"email": "read_user@example.com", "password": "readpassword"}
+    )
+    # Login with "username"
     login_response = client.post(
         "/v1/users/token", 
         data={"username": "read_user@example.com", "password": "readpassword"}
@@ -119,10 +126,15 @@ def test_read_nonexistent_habit(client: TestClient):
     assert response.json()["detail"] == "Habit not found"
 
 def test_update_habit(client: TestClient):
-    # This tests the "happy path" for the update endpoint.
+    # Corrected: Create user with "email"
+    client.post(
+        "/v1/users/",
+        json={"email": "read_user@example.com", "password": "readpassword"}
+    )
+    # Login with "username"
     login_response = client.post(
         "/v1/users/token",
-        datat={"username": "read_user@example.com", "password": "readpassword"}
+        data={"username": "read_user@example.com", "password": "readpassword"}
     )
     token = login_response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -148,7 +160,12 @@ def test_update_habit(client: TestClient):
     assert update_response.json()["id"] == habit_id
 
 def test_delete_habit(client: TestClient):
-    # This tests the "happy path" for the delete endpoint. 
+    # Corrected: Create user with "email"
+    client.post(
+        "/v1/users/",
+        json={"email": "read_user@example.com", "password": "readpassword"}
+    )
+    # Login with "username"
     login_response = client.post(
         "/v1/users/token",
         data={"username": "read_user@example.com", "password": "readpassword"}
@@ -166,7 +183,7 @@ def test_delete_habit(client: TestClient):
 
     # Send a DELETE request. 
     delete_response = client.delete(
-        "/v1/habits/{habit_id}", 
+        f"/v1/habits/{habit_id}", # Corrected: use an f-string to pass the habit_id
         headers=headers
     )
 

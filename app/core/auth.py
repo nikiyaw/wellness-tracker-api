@@ -34,14 +34,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
+        user_email: str = payload.get("sub")
+        if user_email is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
     
     # Query the databsae to et the user object.
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    user = db.query(UserModel).filter(UserModel.email == user_email).first()
     if user is None:
         raise credentials_exception
     
