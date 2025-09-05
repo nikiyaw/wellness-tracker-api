@@ -4,6 +4,8 @@ passlib[bcrypt]
 psycopg[binary]
 pydantic
 pydantic-settings
+pytest
+pytest-cov
 python-dotenv
 python-jose[cryptography]
 python-multipart
