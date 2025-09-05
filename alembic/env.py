@@ -44,7 +44,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = os.getenv("DATBASE_URL")
+    url = os.getenv("DATABASE_URL")
     if url is None:
         url = config.get_main_option("sqlalchemy.url")
 
@@ -66,17 +66,9 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # Use environment variables for a more robust connection
-    db_user = os.getenv("POSTGRES_USER")
-    db_password = os.getenv("POSTGRES_PASSWORD")
-    db_host = "localhost" # It is hardcoded to localhost because the database is run in a service container
-    db_port = "5432" # It is hardcoded to 5432
-    db_name = os.getenv("POSTGRES_DB")
-
-    if db_user and db_password and db_name:
-        connectable = create_engine(
-            f"postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-        )
+    connectable = os.getenv("DATABASE_URL")
+    if connectable is not None:
+        connectable = create_engine(connectable)
     else:
         connectable = engine_from_config(
             config.get_section(config.config_ini_section, {}),
