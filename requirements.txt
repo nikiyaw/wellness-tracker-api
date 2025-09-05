@@ -1,5 +1,6 @@
 alembic
 fastapi
+httpx
 passlib[bcrypt]
 psycopg[binary]
 pydantic
