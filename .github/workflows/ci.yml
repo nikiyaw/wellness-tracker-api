@@ -41,6 +41,7 @@ jobs:
                 python -m pip install --upgrade pip
                 pip install -r requirements.txt
                 pip install pytest pytest-cov 
+                pip install psycopg2-binary
                 
             # Step 4: This is ABSOLUTELY NECESSARY. Set up database. 
             - name: Set up database
