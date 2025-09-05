@@ -53,12 +53,12 @@ jobs:
               run: |
                 alembic upgrade head
               env:
-                ENV_DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+                DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 
             # Step 6: This is ABSOLUTELY NECESSARY. Run tests - it executes your test suite to ensure everything is working.
             - name: Run tests with pytest
               run: | 
                 pytest
               env:
-                ENV_DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+                DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
                 SECRET_KEY: ${{ secrets.SECRET_KEY }}
