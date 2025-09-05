@@ -48,22 +48,19 @@ jobs:
               uses: ankane/setup-postgres@v1
               with:
                 postgres-version: '17'
+                auth-method: trust
 
             # Step 5: This is ABSOLUTELY NECESSARY. Run migrations - it applies any database migrations your project has.
             - name: Run migrations
               run: |
                 alembic upgrade head
               env:
-                POSTGRES_USER: "postgres"
-                POSTGRES_PASSWORD: "postgres"
-                POSTGRES_DB: "postgres"
+                DATABASE_URL: "postgresql://postgres@localhost:5432/postgres"
 
             # Step 6: This is ABSOLUTELY NECESSARY. Run tests - it executes your test suite to ensure everything is working.
             - name: Run tests with pytest
               run: | 
                 pytest
               env:
-                POSTGRES_USER: "postgres"
-                POSTGRES_PASSWORD: "postgres"
-                POSTGRES_DB: "postgres"
+                DATABASE_URL: "postgresql://postgres@localhost:5432/postgres"
                 SECRET_KEY: ${{ secrets.SECRET_KEY }}
