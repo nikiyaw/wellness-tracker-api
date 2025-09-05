@@ -77,5 +77,6 @@ jobs:
               run: | 
                 pytest
               env:
+                PYTHONPATH: .
                 DATABASE_URL: "postgresql+psycopg://postgres:postgres@localhost:5432/wellness_tracker_db"
                 SECRET_KEY: ${{ secrets.SECRET_KEY }}
