@@ -7,6 +7,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
 app.include_router(habits.router, prefix ="/v1/habits", tags=["habits"])
 app.include_router(users.router, prefix="/v1/users", tags=["users"])
 
