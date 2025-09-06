@@ -81,10 +81,10 @@ jobs:
                 DATABASE_URL: "postgresql+psycopg://postgres:postgres@localhost:5432/wellness_tracker_db"
                 SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
-        deploy: 
-            runs-on: ubuntu-latest
-            needs: build 
-            if: github.ref == 'refs/heads/main'
-            steps:
-                - name: Deploy to Render
-                run: echo "Deployment script will go here."
+    deploy: 
+        runs-on: ubuntu-latest
+        needs: build 
+        if: github.ref == 'refs/heads/main'
+        steps:
+          - name: Deploy to Render
+            run: echo "Deployment script will go here."
