@@ -50,6 +50,11 @@ jobs:
                 python-version: "3.10"
                 cache: "pip" # Not absolutely necessary, but it speeds up the workflow by caching pip packages.
 
+            - name: Install system dependencies
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y libpq-dev python3-dev
+
             # Step 3: This is ABSOLUTELY NECESSARY. Install dependencies - it installs the Python packages your project needs.
             - name: Install dependencies
               run: |
