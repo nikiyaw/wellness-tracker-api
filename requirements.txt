@@ -3,7 +3,7 @@ email-validator
 fastapi
 httpx
 passlib[bcrypt]
-psycopg-binary
+psycopg[binary]
 pydantic
 pydantic-settings
 pytest
