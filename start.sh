@@ -5,7 +5,7 @@ set -e
 
 # Run Alembic migrations to create/update database tables
 echo "Running database migrations..."
-DATABASE_URL="postgresql://wellness_tracker_db_n8nu_user:cEapNDJbZI9PXSwCHzMY3aCq0cmp1xvI@dpg-d314m3ndiees73ah6beg-a/wellness_tracker_db_n8nu" alembic upgrade head
+DATABASE_URL="postgresql+psycopg://wellness_tracker_db_n8nu_user:cEapNDJbZI9PXSwCHzMY3aCq0cmp1xvI@dpg-d314m3ndiees73ah6beg-a/wellness_tracker_db_n8nu" alembic upgrade head
 
 # Start the application server
 echo "Starting the application..."
