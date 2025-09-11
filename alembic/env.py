@@ -8,6 +8,9 @@ from sqlalchemy import engine_from_config, create_engine, pool
 from alembic import context
 from app.database.database import Base
 
+from app.models.user import User
+from app.models.habit import Habit
+
 load_dotenv()
 
 # this is the Alembic Config object, which provides
