@@ -72,6 +72,7 @@ jobs:
                 alembic upgrade head
               env:
                 DATABASE_URL: "postgresql+psycopg://postgres:postgres@localhost:5432/wellness_tracker_db"
+                PYTHONPATH: .
 
             # Step 6: This is ABSOLUTELY NECESSARY. Run tests - it executes your test suite to ensure everything is working.
             - name: Run tests with pytest
