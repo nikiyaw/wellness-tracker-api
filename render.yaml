@@ -1,0 +1,9 @@
+services:
+- type: web
+  name: wellness-tracker-api
+  env: python
+  buildCommand: "pip install -r requirements.txt"
+  startCommand: "bash start.sh"
+  plan: free
+  # This is the key fix for the psycopg[binary] issue on Render.
+  preDeployCommand: "apt-get update && apt-get install -y python3-dev libpq-dev"
