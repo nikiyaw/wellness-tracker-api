@@ -1,9 +1,12 @@
 #!/bin/bash
 
-# Run database migration
-echo "Running Alembic migrations..."
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# Run Alembic migrations to create/update database tables
+echo "Running database migrations..."
 alembic upgrade head
 
-# Start the Uvicorn server
-echo "Starting Uvicorn..."
-uvicorn app.main:app --host 0.0.0.0 --port 10000
+# Start the application server
+echo "Starting the application..."
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
