@@ -15,5 +15,12 @@ authentication, and API endpoint design.
 - **Recipe Journal:** Functionality to save and manage sustainable recipes for easy future references.
 - **Progress Visualization:** API endpoints to provide aggregated data and statistics for user habits and workouts.
 
+### Technology Stack
+- **Framework:** FastAPI
+- **Database:** PostgreSQL
+- **ORM:** SQLAlchemy
+- **Migration:** Alembic
+- **Authentication:** passlib (for password hashing), python-jose (for JWT)
+- **Hosting:** Render (for webservice and database hosting)
 
 
