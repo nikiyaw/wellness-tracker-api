@@ -29,7 +29,7 @@ authentication, and API endpoint design.
 - **Authentication:** `passlib` (for password hashing), `python-jose` (for JWT)
 - **Hosting:** Render (for web service and database hosting)
 ### CI/CD and Testing
-This project leverages a CI/CD (Continuous Integration/Continuous Deployment) pipeline using **GitHub Actions**. Upon every push to the main branch, a workflow is triggered to automatically run a suite of tests and deploy the application to Render.
+This project utilizes a CI/CD (Continuous Integration/Continuous Deployment) pipeline powered by **GitHub Actions**. Upon every push to the `main` branch, a workflow is triggered to automatically run a suite of tests and deploy the application to Render.
 API endpoints are thoroughly tested using a dedicated `tests/` folder to ensure reliability and correct functionality before deployment.
 
 ## Getting Started (Local Development)
@@ -76,3 +76,14 @@ This section guides a new developer on how to set up and run the API on their lo
    uvicorn app.main:app --reload
    ```
    Your API will now be running at http://localhost:8000. You can access the interactive API documentation at http://localhost:8000/docs.
+
+## Contributing
+### Generating New Migrations
+If you make changes to the SQLAlchemy models (e.g., adding a new table or column), you must generate a new migration script.
+1. Ensure your local database is up-to-date with your models by running `alembic upgrade head`.
+2. Run the `autogenerate` command:
+   ```
+   alembic revision --autogenerate -m "descriptive message about your changes"
+   ```
+3. Review the generated script in `alembic/versions/` to ensure it correctly reflects your intended schema changes.
+4. Commit the new migration file with your code changes.
