@@ -87,3 +87,6 @@ If you make changes to the SQLAlchemy models (e.g., adding a new table or column
    ```
 3. Review the generated script in `alembic/versions/` to ensure it correctly reflects your intended schema changes.
 4. Commit the new migration file with your code changes.
+
+## License
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
